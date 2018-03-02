@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+
 #import "HYCAspectDesc.h"
 #import "HYCAspectCache.h"
 #import "HYCRuntime.h"
@@ -14,11 +15,11 @@
 
 @interface HYCAspect : NSObject
 
-+(BOOL)hookMethodForClass:(NSString *)clz
-                selector:(NSString *)sel
-              methodType:(HYCAspectMethodType)type
-          aspectPosition:(HYCAspectPoistion)pos
-              withBlock:(id)Block;
++(HYCAspectDesc *)hookMethodForClass:(NSString *)clz
+                            selector:(NSString *)sel
+                          methodType:(HYCAspectMethodType)type
+                      aspectPosition:(HYCAspectPoistion)pos
+                           withBlock:(id)Block;
 
 
 

@@ -38,6 +38,7 @@ static NSString *HYCHookMethodPrefix = @"_hz_hyc_";
 
 @end
 
+#pragma mark - HYCAspectInfo
 
 @interface HYCAspectInfo : NSObject <HYCAspectInfo>
 
@@ -50,10 +51,9 @@ static NSString *HYCHookMethodPrefix = @"_hz_hyc_";
 
 @property (nonatomic, strong, readonly) NSInvocation *originalInvocation;
 
-
-
-
 @end
+
+#pragma mark - HYCAspectDesc
 
 @interface HYCAspectDesc : NSObject
 
@@ -72,7 +72,6 @@ static NSString *HYCHookMethodPrefix = @"_hz_hyc_";
 
 @property(nonatomic,strong)NSMethodSignature *blockSignature;
 
-
 @property(nonatomic,assign)HYCAspectMethodType type;
 
 @property(nonatomic,assign)HYCAspectPoistion poistion;
@@ -82,6 +81,8 @@ static NSString *HYCHookMethodPrefix = @"_hz_hyc_";
 +(NSString *)getSelectorKey:(SEL)sel class:(Class)clz withType:(HYCAspectMethodType)type;
 
 @end
+
+#pragma mark - HYCAspectContainer
 
 @interface HYCAspectContainer : NSObject
 

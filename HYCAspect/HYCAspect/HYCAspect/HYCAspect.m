@@ -10,8 +10,7 @@
 
 @implementation HYCAspect
 
-
-+(BOOL)hookMethodForClass:(NSString *)clzstr
++(HYCAspectDesc *)hookMethodForClass:(NSString *)clzstr
                selector:(NSString *)selstr
              methodType:(HYCAspectMethodType)methodType
          aspectPosition:(HYCAspectPoistion)pos
@@ -22,28 +21,23 @@
 
     BOOL isAbleHooked = [self isAbleHooked:clazz selector:sel methodType:methodType];
     if (!isAbleHooked) {
-        return NO;
+        return nil;
     }
-    
-    Class tempRootClass;
 
-    NSString *key = [HYCAspectDesc getSelectorKey:sel class:clazz withType:methodType];
 
-   
-        
-        Class rootResponderClassForForwardInvocation = [self rootClassForResponodsToClass:clazz
-                                                                         selector:@selector(forwardInvocation:)
-                                                                           methodType:methodType];
+//    Class rootResponderClassForForwardInvocation = [self rootClassForResponodsToClass:clazz
+//                                                                         selector:@selector(forwardInvocation:)
+//                                                                           methodType:methodType];
     
         if (![self putMethodForClass:clazz
                             selector:@selector(forwardInvocation:)
                           methodTyoe:methodType]) {
-            return NO;
+            return nil;
         }
         
-        Class rootResponderClassForSelector = [self rootClassForResponodsToClass:clazz
-                                                                                 selector:sel
-                                                                               methodType:methodType];
+//        Class rootResponderClassForSelector = [self rootClassForResponodsToClass:clazz
+//                                                                                 selector:sel
+//                                                                               methodType:methodType];
     
 
     
@@ -52,7 +46,7 @@
                           methodTyoe:methodType]) {
             [self overwritingMessageForwardMethodForClass:clazz selector:sel methodType:methodType];
         }else{
-            return NO;
+            return nil;
         }
     
         
@@ -67,9 +61,10 @@
                                                       block:block];
     
     
-    return  YES;
+    return  desc;
 }
 
+#pragma mark - Private Func
 
 #define aspect_invoke(aspects, info) \
 for (HYCAspectDesc *aspect in aspects) {\
@@ -104,36 +99,8 @@ static void __ASPECTS_ARE_BEING_CALLED__(id obj, SEL selector, NSInvocation *inv
         invocation.selector = [HYCRuntime hyc_selector:@selector(forwardInvocation:) withPrefix:HYCHookMethodPrefix];
 
         [invocation invoke];
-
+        
     }
-    
-}
-
-+(HYCAspectContainer *)getContainerWithKey:(NSString *)key{
-    HYCAspectContainer *container;
-   
-    
-    if ([[HYCAspectCache shareInstance].targetDic.allKeys containsObject:key]) {
-        container = [HYCAspectCache shareInstance].targetDic[key];
-    }
-    return container;
-}
-
-+(NSString *)getAspectDicKey:(id)obj withInvocation:(NSInvocation *)invocation{
-    
-    BOOL isClass = object_isClass(obj);
-    
-    SEL selector = invocation.selector;
-    
-    HYCAspectMethodType type = isClass ? HYCAspectMethodClass : HYCAspectMethodInstance;
-    
-    Class rootResponderClass = [HYCAspect rootClassForResponodsToClass:[obj class]
-                                                                                                             selector:selector
-                                                                                                           methodType:type];
-    rootResponderClass = [obj class];
-    
-    return  [HYCAspectDesc getSelectorKey:selector class:rootResponderClass withType:type];
-    
 }
 
 + (void)overwritingMethodForClass:(Class)clazz
@@ -168,8 +135,6 @@ static void __ASPECTS_ARE_BEING_CALLED__(id obj, SEL selector, NSInvocation *inv
         
         if (![self copyMethodForClass:clazz atSelector:selector toSelector:aspectsSelector methodType:methodType])
         {
-            
-           
             return NO;
         }
     }
@@ -207,19 +172,42 @@ static void __ASPECTS_ARE_BEING_CALLED__(id obj, SEL selector, NSInvocation *inv
     }
 }
 
-+(HYCAspectDesc *)getAspectDescWithClass:(Class)clz selector:(SEL)sel methodType:(HYCAspectMethodType)type aspectPosition:(HYCAspectPoistion)poistion block:(id)block{
++(HYCAspectContainer *)getContainerWithKey:(NSString *)key{
+    HYCAspectContainer *container;
     
-    // -[ViewController getNumber]
+    
+    if ([[HYCAspectCache shareInstance].targetDic.allKeys containsObject:key]) {
+        container = [HYCAspectCache shareInstance].targetDic[key];
+    }
+    return container;
+}
+
++(NSString *)getAspectDicKey:(id)obj withInvocation:(NSInvocation *)invocation{
+    
+    BOOL isClass = object_isClass(obj);
+    
+    SEL selector = invocation.selector;
+    
+    HYCAspectMethodType type = isClass ? HYCAspectMethodClass : HYCAspectMethodInstance;
+    
+    Class rootResponderClass = [HYCAspect rootClassForResponodsToClass:[obj class]
+                                                              selector:selector
+                                                            methodType:type];
+    rootResponderClass = [obj class];
+    
+    return  [HYCAspectDesc getSelectorKey:selector class:rootResponderClass withType:type];
+    
+}
+
++(HYCAspectDesc *)getAspectDescWithClass:(Class)clz selector:(SEL)sel methodType:(HYCAspectMethodType)type aspectPosition:(HYCAspectPoistion)poistion block:(id)block{
+
     NSString *key = [HYCAspectDesc getSelectorKey:sel class:clz withType:type];
     
-    // Get Desc Model
     HYCAspectDesc *desc = [HYCAspectDesc initDescWithSelector:sel
                                                         Class:clz
                                                         block:block
                                                    methodType:type
                                                aspectPosition:poistion];
-    
-    
     
     if ([[HYCAspectCache shareInstance].targetDic.allKeys containsObject:key]) {
         
@@ -271,8 +259,6 @@ static void __ASPECTS_ARE_BEING_CALLED__(id obj, SEL selector, NSInvocation *inv
     return desc;
 }
 
-
-
 +(BOOL)isAbleHooked:(Class)clz selector:(SEL)sel methodType:(HYCAspectMethodType)methodType{
     
     if (!clz) {
@@ -292,17 +278,7 @@ static void __ASPECTS_ARE_BEING_CALLED__(id obj, SEL selector, NSInvocation *inv
         return NO;
     }
     
-    if (![self hasSelector:sel inClass:clz withMethodType:methodType]) {
-        return NO;
-    }
-    
     return  YES;
-    
-}
-
-+(BOOL)hasSelector:(SEL)sel inClass:(Class)clz withMethodType:(HYCAspectMethodType)type{
-    
-    return YES;
     
 }
 

@@ -8,8 +8,6 @@
 
 #import "HYCRuntime.h"
 
-
-
 @implementation HYCRuntime
 
 + (Class)rootClassForInstanceRespondsToClass:(Class)clazz selector:(SEL)selector
@@ -103,7 +101,7 @@
     HYCBlockRef blockRef = (__bridge void *)block;
 
     if (!(blockRef -> flags & HYCBlockFlagsHasSignature)){
-        NSString *description = [NSString stringWithFormat:@"The block %@ doesn't contain a type signature.", block];
+        //NSString *description = [NSString stringWithFormat:@"The block %@ doesn't contain a type signature.", block];
         return nil;
     }
 
@@ -114,7 +112,7 @@
     }
 
     if (!desc) {
-        NSString *description = [NSString stringWithFormat:@"The block %@ doesn't has a type signature.", block];
+        //NSString *description = [NSString stringWithFormat:@"The block %@ doesn't has a type signature.", block];
         return nil;
     }
     
